@@ -55,6 +55,7 @@ public class BatteryMeterView extends View implements DemoMode,
     private int mHeight;
     private int mWidth;
     private String mWarningString;
+    private final int mLowLevel;
     private final int mCriticalLevel;
     private final int mChargeColor;
     private final float[] mBoltPoints;
@@ -204,6 +205,8 @@ public class BatteryMeterView extends View implements DemoMode,
         mWarningString = context.getString(R.string.battery_meter_very_low_overlay_symbol);
         mCriticalLevel = mContext.getResources().getInteger(
                 com.android.internal.R.integer.config_criticalBatteryWarningLevel);
+        mLowLevel = mContext.getResources().getInteger(
+                com.android.internal.R.integer.config_lowBatteryWarningLevel);
         mButtonHeightFraction = context.getResources().getFraction(
                 R.fraction.battery_button_height_fraction, 1, 1);
         mSubpixelSmoothingLeft = context.getResources().getFraction(
@@ -406,7 +409,11 @@ public class BatteryMeterView extends View implements DemoMode,
 
         if (!tracker.plugged && level > mCriticalLevel && mShowPercent
                 && !(tracker.level == 100 && !SHOW_100_PERCENT)) {
-            mTextPaint.setColor(Color.BLACK);
+            if(level > mLowLevel) {
+                mTextPaint.setColor(Color.BLACK);
+            }else{
+                mTextPaint.setColor(Color.RED);
+            }
             mTextPaint.setTextSize(height *
                     (SINGLE_DIGIT_PERCENT ? 0.75f
                             : (tracker.level == 100 ? 0.38f : 0.5f)));
