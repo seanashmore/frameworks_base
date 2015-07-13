@@ -2487,6 +2487,11 @@ public final class Settings {
                 "window_orientation_listener_log";
 
         /**
+         * Battery Icon % Display
+         */
+        public static final String STATUS_BAR_SHOW_BATTERY_PERCENTAGE = "status_bar_show_battery_percent";
+
+        /**
          * @deprecated Use {@link android.provider.Settings.Global#POWER_SOUNDS_ENABLED}
          * instead
          * @hide

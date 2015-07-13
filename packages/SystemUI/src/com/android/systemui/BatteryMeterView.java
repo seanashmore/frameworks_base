@@ -19,9 +19,12 @@ package com.android.systemui;
 import android.content.*;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
+import android.database.ContentObserver;
 import android.graphics.*;
+import android.net.Uri;
 import android.os.BatteryManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.Settings;
 import android.util.AttributeSet;
 import android.view.View;
@@ -67,9 +70,6 @@ public class BatteryMeterView extends View implements DemoMode,
 
     private BatteryController mBatteryController;
     private boolean mPowerSaveEnabled;
-
-    //To allow for dynamic switching of battery percentage display
-    private ContentResolver contentResolver;
 
     private class BatteryTracker extends BroadcastReceiver {
         public static final int UNKNOWN_LEVEL = -1;
@@ -159,6 +159,8 @@ public class BatteryMeterView extends View implements DemoMode,
             mTracker.onReceive(getContext(), sticky);
         }
         mBatteryController.addStateChangedCallback(this);
+        getContext().getContentResolver()
+                .registerContentObserver(Settings.System.getUriFor(Settings.System.STATUS_BAR_SHOW_BATTERY_PERCENTAGE), false, observer);
     }
 
     @Override
@@ -180,8 +182,6 @@ public class BatteryMeterView extends View implements DemoMode,
     public BatteryMeterView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
 
-        this.contentResolver = context.getContentResolver();
-
         final Resources res = context.getResources();
         TypedArray atts = context.obtainStyledAttributes(attrs, R.styleable.BatteryMeterView,
                 defStyle, 0);
@@ -200,7 +200,7 @@ public class BatteryMeterView extends View implements DemoMode,
         colors.recycle();
         atts.recycle();
         mShowPercent = 0 != Settings.System.getInt(
-                context.getContentResolver(), "status_bar_show_battery_percent", 0);
+                context.getContentResolver(), Settings.System.STATUS_BAR_SHOW_BATTERY_PERCENTAGE, 0);
         mWarningString = context.getString(R.string.battery_meter_very_low_overlay_symbol);
         mCriticalLevel = mContext.getResources().getInteger(
                 com.android.internal.R.integer.config_criticalBatteryWarningLevel);
@@ -239,6 +239,15 @@ public class BatteryMeterView extends View implements DemoMode,
         mBoltPaint.setColor(res.getColor(R.color.batterymeter_bolt_color));
         mBoltPoints = loadBoltPoints(res);
     }
+
+    private ContentObserver observer = new ContentObserver(new Handler()) {
+        @Override
+        public void onChange(boolean selfChange, Uri uri, int userId) {
+            mShowPercent = 0 != Settings.System.getInt(
+                    getContext().getContentResolver(), Settings.System.STATUS_BAR_SHOW_BATTERY_PERCENTAGE, 0);
+            postInvalidate();
+        }
+    };
 
     public void setBatteryController(BatteryController batteryController) {
         mBatteryController = batteryController;
@@ -395,15 +404,9 @@ public class BatteryMeterView extends View implements DemoMode,
         float pctX = 0, pctY = 0;
         String pctText = null;
 
-        //Probably shouldn't call this in the draw method but will allow dynamic switching of this feature
-        //without having to reboot the device
-        mShowPercent = 0 != Settings.System.getInt(
-                contentResolver, "status_bar_show_battery_percent", 0);
-
         if (!tracker.plugged && level > mCriticalLevel && mShowPercent
                 && !(tracker.level == 100 && !SHOW_100_PERCENT)) {
             mTextPaint.setColor(Color.BLACK);
-            mTextPaint.setTypeface(Typeface.DEFAULT_BOLD);
             mTextPaint.setTextSize(height *
                     (SINGLE_DIGIT_PERCENT ? 0.75f
                             : (tracker.level == 100 ? 0.38f : 0.5f)));
