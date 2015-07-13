@@ -16,6 +16,7 @@
 
 package com.android.internal.policy.impl;
 
+import android.os.*;
 import com.android.internal.app.AlertController;
 import com.android.internal.app.AlertController.AlertParams;
 import com.android.internal.telephony.TelephonyIntents;
@@ -37,17 +38,6 @@ import android.database.ContentObserver;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.net.ConnectivityManager;
-import android.os.Build;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.os.RemoteException;
-import android.os.ServiceManager;
-import android.os.SystemClock;
-import android.os.SystemProperties;
-import android.os.UserHandle;
-import android.os.UserManager;
-import android.os.Vibrator;
 import android.provider.Settings;
 import android.service.dreams.DreamService;
 import android.service.dreams.IDreamManager;
@@ -94,6 +84,7 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
     /* Valid settings for global actions keys.
      * see config.xml config_globalActionList */
     private static final String GLOBAL_ACTION_KEY_POWER = "power";
+    private static final String GLOBAL_ACTION_KEY_REBOOT = "reboot";
     private static final String GLOBAL_ACTION_KEY_AIRPLANE = "airplane";
     private static final String GLOBAL_ACTION_KEY_BUGREPORT = "bugreport";
     private static final String GLOBAL_ACTION_KEY_SILENT = "silent";
@@ -272,6 +263,8 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
             }
             if (GLOBAL_ACTION_KEY_POWER.equals(actionKey)) {
                 mItems.add(new PowerAction());
+            } else if(GLOBAL_ACTION_KEY_REBOOT.equals(actionKey)){
+                mItems.add(new RebootAction());
             } else if (GLOBAL_ACTION_KEY_AIRPLANE.equals(actionKey)) {
                 mItems.add(mAirplaneModeOn);
             } else if (GLOBAL_ACTION_KEY_BUGREPORT.equals(actionKey)) {
@@ -355,6 +348,35 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
         public void onPress() {
             // shutdown by making sure radio and power are handled accordingly.
             mWindowManagerFuncs.shutdown(false /* confirm */);
+        }
+    }
+
+    private final class RebootAction extends SinglePressAction{
+
+        //hard-coding string for now as xml doesn't seem to be getting picked up
+        private RebootAction(){
+            super(R.drawable.ic_lock_power_off,
+                    "Reboot");
+        }
+
+        @Override
+        public void onPress() {
+            try {
+                IPowerManager powerManager = IPowerManager.Stub.asInterface(ServiceManager.getService(Context.POWER_SERVICE));
+                powerManager.reboot(false, null, false);
+            }catch(RemoteException e){
+                Log.e(TAG,"PowerManager service failed! : " +e);
+            }
+        }
+
+        @Override
+        public boolean showDuringKeyguard() {
+            return true;
+        }
+
+        @Override
+        public boolean showBeforeProvisioning() {
+            return true;
         }
     }
 
@@ -778,7 +800,7 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
         /**
          * @param enabledIconResId The icon for when this action is on.
          * @param disabledIconResid The icon for when this action is off.
-         * @param essage The general information message, e.g 'Silent Mode'
+         * @param message The general information message, e.g 'Silent Mode'
          * @param enabledStatusMessageResId The on status message, e.g 'sound disabled'
          * @param disabledStatusMessageResId The off status message, e.g. 'sound enabled'
          */
