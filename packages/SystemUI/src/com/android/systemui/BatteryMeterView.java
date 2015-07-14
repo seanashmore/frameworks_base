@@ -77,7 +77,6 @@ public class BatteryMeterView extends View implements DemoMode,
 
         // current battery status
         int level = UNKNOWN_LEVEL;
-        String percentStr;
         int plugType;
         boolean plugged;
         int health;
