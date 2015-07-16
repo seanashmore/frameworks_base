@@ -2491,6 +2491,11 @@ public final class Settings {
          */
         public static final String STATUS_BAR_SHOW_BATTERY_PERCENTAGE = "status_bar_show_battery_percent";
 
+        /*
+        * Notification Count Display
+         */
+        public static final String STATUS_BAR_SHOW_NOTIFICATION_COUNT = "status_bar_show_notification_count";
+
         /**
          * @deprecated Use {@link android.provider.Settings.Global#POWER_SOUNDS_ENABLED}
          * instead

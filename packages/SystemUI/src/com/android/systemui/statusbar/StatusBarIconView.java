@@ -25,6 +25,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.UserHandle;
+import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -123,8 +124,9 @@ public class StatusBarIconView extends AnimatedImageView {
         }
 
         if (!numberEquals) {
-            if (icon.number > 0 && getContext().getResources().getBoolean(
-                        R.bool.config_statusBarShowNumber)) {
+            if (icon.number > 0 &&
+                    Settings.System.getInt(getContext().getContentResolver(),
+                    Settings.System.STATUS_BAR_SHOW_NOTIFICATION_COUNT, 0) == 1){
                 if (mNumberBackground == null) {
                     mNumberBackground = getContext().getResources().getDrawable(
                             R.drawable.ic_notification_overlay);
