@@ -45,6 +45,14 @@
            android:layout_width="match_parent"
            android:layout_height="match_parent" />
 
+    <ImageButton
+            android:id="@+id/dismiss_button"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="top|right"
+            android:background="@drawable/ripple_drawable"
+            android:src="@drawable/dismiss_all_recents_shape" />
+
     <!-- Nav Bar Scrim View -->
     <ImageView
         android:id="@+id/nav_bar_scrim"
@@ -53,4 +61,5 @@
         android:layout_gravity="center_horizontal|bottom"
         android:scaleType="fitXY"
         android:src="@drawable/recents_lower_gradient" />
+
 </FrameLayout>

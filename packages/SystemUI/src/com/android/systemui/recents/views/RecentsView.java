@@ -27,11 +27,15 @@ import android.net.Uri;
 import android.os.UserHandle;
 import android.provider.Settings;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowInsets;
 import android.widget.FrameLayout;
 
+import android.widget.ImageButton;
+import android.widget.StackView;
+import com.android.systemui.R;
 import com.android.systemui.recents.Constants;
 import com.android.systemui.recents.RecentsConfiguration;
 import com.android.systemui.recents.misc.SystemServicesProxy;
@@ -65,6 +69,7 @@ public class RecentsView extends FrameLayout implements TaskStackView.TaskStackV
     ArrayList<TaskStack> mStacks;
     View mSearchBar;
     RecentsViewCallbacks mCb;
+    ImageButton dismissButton;
 
     public RecentsView(Context context) {
         super(context);
@@ -289,6 +294,13 @@ public class RecentsView extends FrameLayout implements TaskStackView.TaskStackV
         mConfig.getTaskStackBounds(width, height, mConfig.systemInsets.top,
                 mConfig.systemInsets.right, taskStackBounds);
 
+        if(dismissButton != null) {
+            FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) dismissButton.getLayoutParams();
+            lp.topMargin = taskStackBounds.top;
+            lp.rightMargin = width - taskStackBounds.right;
+            dismissButton.setLayoutParams(lp);
+        }
+
         // Measure each TaskStackView with the full width and height of the window since the 
         // transition view is a child of that stack view
         int childCount = getChildCount();
@@ -376,6 +388,16 @@ public class RecentsView extends FrameLayout implements TaskStackView.TaskStackV
                 TaskStackView stackView = (TaskStackView) child;
                 stackView.dismissFocusedTask();
                 break;
+            }
+        }
+    }
+
+    public void dismissAllTasksAnimated(){
+        for(int i=0;i<getChildCount();i++){
+            View child = getChildAt(i);
+            if(child != mSearchBar){
+                TaskStackView stackView = (TaskStackView)child;
+                stackView.dismissAllTasks();
             }
         }
     }
@@ -603,6 +625,23 @@ public class RecentsView extends FrameLayout implements TaskStackView.TaskStackV
                 TaskStackView stackView = (TaskStackView) child;
                 stackView.onPackagesChanged(monitor, packageName, userId);
             }
+        }
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        dismissButton = ((ImageButton) ((View) getParent()).findViewById(R.id.dismiss_button));
+        if (dismissButton != null) {
+            dismissButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Log.i("RecentsView", "Touched dismiss all tasks");
+                    dismissAllTasksAnimated();
+                }
+            });
+        } else {
+            Log.i("RecentsView", "dismissButton is null");
         }
     }
 }

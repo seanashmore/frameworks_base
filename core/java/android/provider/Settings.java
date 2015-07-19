@@ -2483,18 +2483,22 @@ public final class Settings {
          * 1 = yes
          * @hide
          */
-        public static final String WINDOW_ORIENTATION_LISTENER_LOG =
-                "window_orientation_listener_log";
+        public static final String WINDOW_ORIENTATION_LISTENER_LOG = "window_orientation_listener_log";
 
         /**
          * Battery Icon % Display
          */
         public static final String STATUS_BAR_SHOW_BATTERY_PERCENTAGE = "status_bar_show_battery_percent";
 
-        /*
-        * Notification Count Display
+        /**
+         * Notification Count Display
          */
         public static final String STATUS_BAR_SHOW_NOTIFICATION_COUNT = "status_bar_show_notification_count";
+
+        /**
+         * Show Dismiss-All-Tasks Button On Recents
+         */
+        public static final String RECENTS_SHOW_DISMISS_ALL = "recents_show_dismiss_all";
 
         /**
          * @deprecated Use {@link android.provider.Settings.Global#POWER_SOUNDS_ENABLED}

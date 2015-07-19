@@ -30,10 +30,12 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.os.UserHandle;
+import android.provider.Settings;
 import android.util.Pair;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewStub;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.android.systemui.R;
@@ -84,6 +86,7 @@ public class RecentsActivity extends Activity implements RecentsView.RecentsView
     FinishRecentsRunnable mFinishLaunchHomeRunnable;
 
     private PhoneStatusBar mStatusBar;
+    private ImageButton dismissButton;
 
     /**
      * A common Runnable to finish Recents either by calling finish() (with a custom animation) or
@@ -242,11 +245,20 @@ public class RecentsActivity extends Activity implements RecentsView.RecentsView
                 mEmptyView = mEmptyViewStub.inflate();
             }
             mEmptyView.setVisibility(View.VISIBLE);
+            dismissButton.setVisibility(View.GONE);
             mRecentsView.setSearchBarVisibility(View.GONE);
         } else {
             if (mEmptyView != null) {
                 mEmptyView.setVisibility(View.GONE);
             }
+
+            if(Settings.System.getInt(getContentResolver(),
+                    Settings.System.RECENTS_SHOW_DISMISS_ALL, 0) == 1) {
+                dismissButton.setVisibility(View.VISIBLE);
+            }else{
+                dismissButton.setVisibility(View.GONE);
+            }
+
             if (mRecentsView.hasSearchBar()) {
                 mRecentsView.setSearchBarVisibility(View.VISIBLE);
             } else {
@@ -384,6 +396,8 @@ public class RecentsActivity extends Activity implements RecentsView.RecentsView
         mStatusBar = ((SystemUIApplication) getApplication())
                 .getComponent(PhoneStatusBar.class);
         inflateDebugOverlay();
+
+        dismissButton = (ImageButton)findViewById(R.id.dismiss_button);
 
         // Bind the search app widget when we first start up
         bindSearchBarAppWidget();
